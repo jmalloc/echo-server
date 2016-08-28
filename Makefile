@@ -23,7 +23,10 @@ debug: $(addprefix $(BUILD_PATH)/debug/,$(TARGETS))
 
 release: $(addprefix $(BUILD_PATH)/release/,$(TARGETS))
 
-docker: artifacts/docker.log
+docker: Dockerfile $(BUILD_PATH)/release/linux/amd64/echo-server
+	@mkdir -p bin
+	cp $(BUILD_PATH)/release/linux/amd64/echo-server bin/echo-server
+	docker build .
 
 clean:
 	@git check-ignore ./* | grep -v ^./vendor | xargs -t -n1 rm -rf
@@ -87,6 +90,3 @@ $(COVERAGE_PATH)/coverage.cov: $(foreach P,$(PACKAGES),$(COVERAGE_PATH)/$(P)cove
 	@mkdir -p $(@D)
 	@touch "$@"
 	go test "$(PKG)" -covermode=count -coverprofile="$@"
-
-artifacts/docker.log: Dockerfile $(BUILD_PATH)/release/linux/amd64/echo-server
-	docker build . | tee "$@"
