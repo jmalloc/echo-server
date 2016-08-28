@@ -1,0 +1,4 @@
+package: github.com/jmalloc/echo-server
+import:
+- package: github.com/gorilla/websocket
+  version: ^1.0.0
