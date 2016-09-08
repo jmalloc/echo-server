@@ -243,7 +243,8 @@ var websocketHTML = `
 
             var connectBtn = document.getElementById('connect');
             connectBtn.onclick = function () {
-                clearTimeout(connectTimer)
+                clearTimeout(connectTimer);
+                clearTimeout(messageTimer);
                 connect();
             }
 
@@ -258,7 +259,8 @@ var websocketHTML = `
 
                 autoReconnect = false;
                 ws.close();
-                clearTimeout(connectTimer)
+                clearTimeout(connectTimer);
+                clearTimeout(messageTimer);
             }
 
             var cancelBtn = document.getElementById('cancel');
@@ -273,6 +275,7 @@ var websocketHTML = `
                 log('cancelled connection attempt', 'info');
                 autoReconnect = false;
                 clearTimeout(connectTimer);
+                clearTimeout(messageTimer);
             }
 
             var msgPanel = document.getElementById('msg');
