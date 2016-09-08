@@ -51,32 +51,35 @@ func serveWebSocket(wr http.ResponseWriter, req *http.Request) {
 	defer connection.Close()
 	fmt.Printf("%s | upgraded to websocket\n", req.RemoteAddr)
 
-	host, err := os.Hostname()
-	if err == nil {
-		err = connection.WriteMessage(
-			websocket.TextMessage,
-			[]byte(fmt.Sprintf("Request served by %s\n\n", host)),
-		)
-	}
-
-	var messageType int
 	var message []byte
 
-	for {
-		messageType, message, err = connection.ReadMessage()
-		if err != nil {
-			break
-		}
+	host, err := os.Hostname()
+	if err == nil {
+		message = []byte(fmt.Sprintf("Request served by %s", host))
+	} else {
+		message = []byte(fmt.Sprintf("Server hostname unknown: %s", err.Error()))
+	}
 
-		if messageType == websocket.TextMessage {
-			fmt.Printf("%s | txt | %s\n", req.RemoteAddr, message)
-		} else {
-			fmt.Printf("%s | bin | %d byte(s)\n", req.RemoteAddr, len(message))
-		}
+	err = connection.WriteMessage(websocket.TextMessage, message)
+	if err == nil {
+		var messageType int
 
-		err = connection.WriteMessage(messageType, message)
-		if err != nil {
-			break
+		for {
+			messageType, message, err = connection.ReadMessage()
+			if err != nil {
+				break
+			}
+
+			if messageType == websocket.TextMessage {
+				fmt.Printf("%s | txt | %s\n", req.RemoteAddr, message)
+			} else {
+				fmt.Printf("%s | bin | %d byte(s)\n", req.RemoteAddr, len(message))
+			}
+
+			err = connection.WriteMessage(messageType, message)
+			if err != nil {
+				break
+			}
 		}
 	}
 
@@ -92,6 +95,8 @@ func serveHTTP(wr http.ResponseWriter, req *http.Request) {
 	host, err := os.Hostname()
 	if err == nil {
 		fmt.Fprintf(wr, "Request served by %s\n\n", host)
+	} else {
+		fmt.Fprintf(wr, "Server hostname unknown: %s\n\n", err.Error())
 	}
 
 	fmt.Fprintf(wr, "%s %s %s\n", req.Proto, req.Method, req.URL)

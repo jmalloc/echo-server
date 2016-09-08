@@ -26,7 +26,7 @@ release: $(addprefix $(BUILD_PATH)/release/,$(TARGETS))
 docker: Dockerfile $(BUILD_PATH)/release/linux/amd64/echo-server
 	@mkdir -p bin
 	cp $(BUILD_PATH)/release/linux/amd64/echo-server bin/echo-server
-	docker build .
+	docker build -t jmalloc/echo-server:dev .
 
 clean:
 	@git check-ignore ./* | grep -v ^./vendor | xargs -t -n1 rm -rf
