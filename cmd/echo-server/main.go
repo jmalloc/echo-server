@@ -57,26 +57,26 @@ func serveWebSocket(wr http.ResponseWriter, req *http.Request) {
 			websocket.TextMessage,
 			[]byte(fmt.Sprintf("Request served by %s\n\n", host)),
 		)
+	}
 
-		var messageType int
-		var message []byte
+	var messageType int
+	var message []byte
 
-		for {
-			messageType, message, err = connection.ReadMessage()
-			if err != nil {
-				break
-			}
+	for {
+		messageType, message, err = connection.ReadMessage()
+		if err != nil {
+			break
+		}
 
-			if messageType == websocket.TextMessage {
-				fmt.Printf("%s | txt | %s\n", req.RemoteAddr, message)
-			} else {
-				fmt.Printf("%s | bin | %d byte(s)\n", req.RemoteAddr, len(message))
-			}
+		if messageType == websocket.TextMessage {
+			fmt.Printf("%s | txt | %s\n", req.RemoteAddr, message)
+		} else {
+			fmt.Printf("%s | bin | %d byte(s)\n", req.RemoteAddr, len(message))
+		}
 
-			err = connection.WriteMessage(messageType, message)
-			if err != nil {
-				break
-			}
+		err = connection.WriteMessage(messageType, message)
+		if err != nil {
+			break
 		}
 	}
 
