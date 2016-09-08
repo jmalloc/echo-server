@@ -51,30 +51,48 @@ func serveWebSocket(wr http.ResponseWriter, req *http.Request) {
 	defer connection.Close()
 	fmt.Printf("%s | upgraded to websocket\n", req.RemoteAddr)
 
-	for {
-		messageType, message, err := connection.ReadMessage()
-		if err != nil {
-			fmt.Printf("%s | %s\n", req.RemoteAddr, err)
-			break
-		}
+	host, err := os.Hostname()
+	if err == nil {
+		err = connection.WriteMessage(
+			websocket.TextMessage,
+			[]byte(fmt.Sprintf("Request served by %s\n\n", host)),
+		)
 
-		if messageType == websocket.TextMessage {
-			fmt.Printf("%s | txt | %s\n", req.RemoteAddr, message)
-		} else {
-			fmt.Printf("%s | bin | %d byte(s)\n", req.RemoteAddr, len(message))
-		}
+		var messageType int
+		var message []byte
 
-		err = connection.WriteMessage(messageType, message)
-		if err != nil {
-			fmt.Printf("%s | %s\n", req.RemoteAddr, err)
-			break
+		for {
+			messageType, message, err = connection.ReadMessage()
+			if err != nil {
+				break
+			}
+
+			if messageType == websocket.TextMessage {
+				fmt.Printf("%s | txt | %s\n", req.RemoteAddr, message)
+			} else {
+				fmt.Printf("%s | bin | %d byte(s)\n", req.RemoteAddr, len(message))
+			}
+
+			err = connection.WriteMessage(messageType, message)
+			if err != nil {
+				break
+			}
 		}
+	}
+
+	if err != nil {
+		fmt.Printf("%s | %s\n", req.RemoteAddr, err)
 	}
 }
 
 func serveHTTP(wr http.ResponseWriter, req *http.Request) {
 	wr.Header().Add("Content-Type", "text/plain")
 	wr.WriteHeader(200)
+
+	host, err := os.Hostname()
+	if err == nil {
+		fmt.Fprintf(wr, "Request served by %s\n\n", host)
+	}
 
 	fmt.Fprintf(wr, "%s %s %s\n", req.Proto, req.Method, req.URL)
 	fmt.Fprintln(wr, "")

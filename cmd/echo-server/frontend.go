@@ -157,7 +157,10 @@ var websocketHTML = `
 
                     console.log(ev);
                     log('connected', 'info');
-                    send();
+
+                    clearTimeout(messageTimer);
+                    messageTimer = setTimeout(send, messageDelay);
+
                     ws.onclose = function (ev) {
                         console.log(ev);
                         clearTimeout(messageTimer);
