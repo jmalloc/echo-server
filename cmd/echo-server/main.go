@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -29,7 +30,16 @@ var upgrader = websocket.Upgrader{
 }
 
 func handler(wr http.ResponseWriter, req *http.Request) {
-	fmt.Printf("%s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
+
+	if req.Method == http.MethodPost {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(req.Body)
+		body := buf.Bytes()
+		fmt.Printf("%s | %s %s %s\n", req.RemoteAddr, req.Method, req.URL, body)
+	} else {
+		fmt.Printf("%s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
+	}
+
 	if websocket.IsWebSocketUpgrade(req) {
 		serveWebSocket(wr, req)
 	} else if req.URL.Path == "/.ws" {
