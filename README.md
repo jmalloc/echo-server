@@ -6,6 +6,7 @@ A very simple HTTP echo server with support for web-sockets.
 - Visit `/.ws` for a basic UI to connect and send web-socket messages.
 - Requests to any other URL will return the request headers and body.
 - The `PORT` environment variable sets the server port.
+- Set the `LOG_HTTP_BODY` environment variable to dump request bodies to `STDOUT`.
 - No TLS support yet :(
 
 To run as a container:
