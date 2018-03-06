@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 
@@ -30,12 +32,23 @@ var upgrader = websocket.Upgrader{
 }
 
 func handler(wr http.ResponseWriter, req *http.Request) {
-
-	if req.Method == http.MethodPost {
-		buf := new(bytes.Buffer)
+	if os.Getenv("LOG_HTTP_BODY") != "" {
+		fmt.Printf("--------  %s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
+		buf := &bytes.Buffer{}
 		buf.ReadFrom(req.Body)
-		body := buf.Bytes()
-		fmt.Printf("%s | %s %s %s\n", req.RemoteAddr, req.Method, req.URL, body)
+
+		if buf.Len() != 0 {
+			w := hex.Dumper(os.Stdout)
+			w.Write(buf.Bytes())
+			w.Close()
+		}
+
+		// Replace original body with buffered version so it's still sent to the
+		// browser.
+		req.Body.Close()
+		req.Body = ioutil.NopCloser(
+			bytes.NewReader(buf.Bytes()),
+		)
 	} else {
 		fmt.Printf("%s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
 	}
