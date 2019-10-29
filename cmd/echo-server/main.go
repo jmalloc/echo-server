@@ -10,6 +10,8 @@ import (
 	"os"
 
 	"github.com/gorilla/websocket"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 func main() {
@@ -19,7 +21,14 @@ func main() {
 	}
 
 	fmt.Printf("Echo server listening on port %s.\n", port)
-	err := http.ListenAndServe(":"+port, http.HandlerFunc(handler))
+
+	err := http.ListenAndServe(
+		":"+port,
+		h2c.NewHandler(
+			http.HandlerFunc(handler),
+			&http2.Server{},
+		),
+	)
 	if err != nil {
 		panic(err)
 	}
