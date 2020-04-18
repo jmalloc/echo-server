@@ -1,10 +1,10 @@
 # Echo Server
 
-A very simple HTTP echo server with support for web-sockets.
+A very simple HTTP echo server with support for websockets.
 
 ## Behavior
 - Any messages sent from a websocket client are echoed
-- Visit `/.ws` for a basic UI to connect and send web-socket messages
+- Visit `/.ws` for a basic UI to connect and send websocket messages
 - Requests to any other URL will return the request headers and body
 
 ## Configuration
