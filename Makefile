@@ -51,17 +51,8 @@ ci: $(COVERAGE_PATH)/coverage.cov
 
 .PHONY: build test debug release docker clean clean-all coverage open-coverage lint prepare ci
 
-GLIDE := $(GOPATH)/bin/glide
-$(GLIDE):
-	go get -u github.com/Masterminds/glide
-
-vendor: glide.lock | $(GLIDE)
-	$(GLIDE) install
-	@touch vendor
-
-glide.lock: glide.yaml | $(GLIDE)
-	$(GLIDE) update
-	@touch vendor
+vendor: go.mod
+	go mod vendor
 
 $(BUILD_PATH)/%: vendor $(SOURCES)
 	$(eval PARTS := $(subst /, ,$*))
@@ -73,20 +64,9 @@ $(BUILD_PATH)/%: vendor $(SOURCES)
 
 	GOARCH=$(ARCH) GOOS=$(OS) go build $(FLAGS) -o "$@" "$(PKG)"
 
-GOCOVMERGE := $(GOPATH)/bin/gocovmerge
-$(GOCOVMERGE):
-	go get -u github.com/wadey/gocovmerge
-
 $(COVERAGE_PATH)/index.html: $(COVERAGE_PATH)/coverage.cov
 	go tool cover -html="$<" -o "$@"
 
-$(COVERAGE_PATH)/coverage.cov: $(foreach P,$(PACKAGES),$(COVERAGE_PATH)/$(P)coverage.partial) | $(GOCOVMERGE)
-	@mkdir -p $(@D)
-	$(GOCOVMERGE) $^ > "$@"
-
-.SECONDEXPANSION:
-%/coverage.partial: vendor $$(subst $(COVERAGE_PATH)/,,$$(@D))/*.go
-	$(eval PKG := $(subst $(COVERAGE_PATH)/,,$*))
-	@mkdir -p $(@D)
-	@touch "$@"
-	go test "$(PKG)" -covermode=count -coverprofile="$@"
+$(COVERAGE_PATH)/coverage.cov: vendor
+	@mkdir -p "$(COVERAGE_PATH)"
+	go test $(PACKAGES) -covermode=count -coverprofile="$(COVERAGE_PATH)/coverage.cov"
