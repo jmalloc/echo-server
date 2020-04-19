@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+    branches:
+    - '*'
+  pull_request:
+  schedule:
+  - cron: 0 14 * * 0
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Make
+      run: make ci
+    - name: Upload Coverage Reports
+      if: success()
+      run: |
+        test ! -z "$TOKEN"
+        bash <(curl -s https://codecov.io/bash) -t "$TOKEN" -B "${{ github.ref }}"
+      env:
+        TOKEN: "${{ secrets.CODECOV_TOKEN }}"
