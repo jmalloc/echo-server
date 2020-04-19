@@ -21,7 +21,7 @@ server bound to a custom TCP port of `10000`.
 
 ```
 GO111MODULE=off go get -u github.com/jmalloc/echo-server/...
-PORT=1000 echo-server
+PORT=10000 echo-server
 ```
 
 ### Running under Docker
