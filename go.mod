@@ -1,4 +1,4 @@
-module github.com/jmalloc/echo-server
+module github.com/FrancisLevesque/echo-server
 
 go 1.14
 

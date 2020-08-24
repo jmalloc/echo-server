@@ -1,4 +1,4 @@
-DOCKER_REPO = jmalloc/echo-server
+DOCKER_REPO = flevesqu/echo-server
 
 GO_MATRIX_OS := windows linux darwin
 GO_MATRIX_ARCH := amd64

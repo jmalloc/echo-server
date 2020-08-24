@@ -20,7 +20,7 @@ server bound to a custom TCP port of `10000`.
 ### Running locally
 
 ```
-GO111MODULE=off go get -u github.com/jmalloc/echo-server/...
+GO111MODULE=off go get -u github.com/FrancisLevesque/echo-server/...
 PORT=10000 echo-server
 ```
 
@@ -29,11 +29,11 @@ PORT=10000 echo-server
 To run as a container:
 
 ```
-docker run --detach -p 10000:8080 jmalloc/echo-server
+docker run --detach -p 10000:8080 flevesqu/echo-server
 ```
 
 To run as a service:
 
 ```
-docker service create --publish 10000:8080 jmalloc/echo-server
+docker service create --publish 10000:8080 flevesqu/echo-server
 ```
