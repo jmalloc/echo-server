@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/http2"
@@ -67,6 +68,8 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 	} else if req.URL.Path == "/.ws" {
 		wr.Header().Add("Content-Type", "text/html")
 		wr.WriteHeader(200)
+		websocketHTML = strings.Replace(websocketHTML, "HOSTNAME", os.Getenv("HOSTNAME"), 1)
+		websocketHTML = strings.Replace(websocketHTML, "IDENTIFIER", os.Getenv("IDENTIFIER"), 1)
 		io.WriteString(wr, websocketHTML)
 	} else {
 		serveHTTP(wr, req)

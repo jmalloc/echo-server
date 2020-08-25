@@ -17,23 +17,24 @@ A very simple HTTP echo server with support for websockets.
 The examples below show a few different ways of running the server with the HTTP
 server bound to a custom TCP port of `10000`.
 
-### Running locally
+### Building
 
 ```
-GO111MODULE=off go get -u github.com/FrancisLevesque/echo-server/...
-PORT=10000 echo-server
+make release
+docker build . -t echo
 ```
 
-### Running under Docker
+### Running
 
 To run as a container:
 
 ```
-docker run --detach -p 10000:8080 flevesqu/echo-server
+docker run -p 8080:8080 echo:latest --rm
 ```
 
-To run as a service:
+or with environment variables:
+```
+docker run -e SERVER_NAME=[NAME] -e LOG_HTTP_BODY=true [-e etc...] -p 8080:8080 echo:latest --rm
+```
 
-```
-docker service create --publish 10000:8080 flevesqu/echo-server
-```
+You can hit the application in a browser at `http://0.0.0.0:8080/.ws` (provided you didn't change the default port).

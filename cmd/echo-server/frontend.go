@@ -103,6 +103,7 @@ var websocketHTML = `
             </div>
         </div>
         <div id="console" />
+        <div><p>CONNECTED TO THE FOLLOWING CONTAINER ID: HOSTNAME IDENTIFIER</p></div>
         <script>
             var ws
             var messageDelay = 1500
