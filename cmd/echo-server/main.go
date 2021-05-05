@@ -44,11 +44,11 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 	if os.Getenv("LOG_HTTP_BODY") != "" {
 		fmt.Printf("--------  %s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
 		buf := &bytes.Buffer{}
-		buf.ReadFrom(req.Body)
+		buf.ReadFrom(req.Body) // nolint:errcheck
 
 		if buf.Len() != 0 {
 			w := hex.Dumper(os.Stdout)
-			w.Write(buf.Bytes())
+			w.Write(buf.Bytes()) // nolint:errcheck
 			w.Close()
 		}
 
@@ -67,7 +67,7 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 	} else if req.URL.Path == "/.ws" {
 		wr.Header().Add("Content-Type", "text/html")
 		wr.WriteHeader(200)
-		io.WriteString(wr, websocketHTML)
+		io.WriteString(wr, websocketHTML) // nolint:errcheck
 	} else {
 		serveHTTP(wr, req)
 	}
@@ -141,5 +141,5 @@ func serveHTTP(wr http.ResponseWriter, req *http.Request) {
 	}
 
 	fmt.Fprintln(wr, "")
-	io.Copy(wr, req.Body)
+	io.Copy(wr, req.Body) // nolint:errcheck
 }
