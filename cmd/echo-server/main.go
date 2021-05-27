@@ -41,8 +41,22 @@ var upgrader = websocket.Upgrader{
 }
 
 func handler(wr http.ResponseWriter, req *http.Request) {
-	if os.Getenv("LOG_HTTP_BODY") != "" {
+
+	if (os.Getenv("LOG_HTTP_BODY") != "" || os.Getenv("LOG_HTTP_HEADERS") != "") {
 		fmt.Printf("--------  %s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
+	} else {
+		fmt.Printf("%s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
+	}
+
+	if os.Getenv("LOG_HTTP_HEADERS") != "" {
+		fmt.Printf("Headers\n")
+		//Iterate over all header fields
+		for k, v := range req.Header {
+			fmt.Printf("%q : %q\n", k, v)
+		}
+	}
+
+	if os.Getenv("LOG_HTTP_BODY") != "" {
 		buf := &bytes.Buffer{}
 		buf.ReadFrom(req.Body) // nolint:errcheck
 
@@ -58,8 +72,6 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 		req.Body = ioutil.NopCloser(
 			bytes.NewReader(buf.Bytes()),
 		)
-	} else {
-		fmt.Printf("%s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
 	}
 
 	if websocket.IsWebSocketUpgrade(req) {
