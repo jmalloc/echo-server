@@ -11,6 +11,7 @@ A very simple HTTP echo server with support for websockets.
 
 - The `PORT` environment variable sets the server port, which defaults to `8080`
 - Set the `LOG_HTTP_BODY` environment variable to dump request bodies to `STDOUT`
+- Set the `LOG_HTTP_HEADERS` environment variable to dump request headers to `STDOUT`
 
 ## Running the server
 
@@ -22,6 +23,13 @@ server bound to a custom TCP port of `10000`.
 ```
 GO111MODULE=off go get -u github.com/jmalloc/echo-server/...
 PORT=10000 echo-server
+```
+
+### Docker build
+
+```
+make makefiles
+make docker
 ```
 
 ### Running under Docker
