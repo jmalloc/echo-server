@@ -28,7 +28,8 @@ PORT=10000 echo-server
 ### Docker build
 
 ```
-docker build -t jmalloc/echo-server .
+make makefiles
+make docker
 ```
 
 ### Running under Docker

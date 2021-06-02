@@ -3,7 +3,6 @@ version: '2.4'
 services:
 
   echo:
-    build: .
     image: jmalloc/echo-server:latest
     environment:
       PORT: 8080
