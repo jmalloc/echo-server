@@ -12,10 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Set up Go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v2
       with:
-        go-version: 1.16
-      id: go
+        go-version: ^1
     - name: Checkout
       uses: actions/checkout@v1
     - name: Make
@@ -23,7 +22,4 @@ jobs:
     - name: Upload Coverage Reports
       if: success()
       run: |
-        test ! -z "$TOKEN"
-        bash <(curl -s https://codecov.io/bash) -t "$TOKEN" -B "${{ github.ref }}"
-      env:
-        TOKEN: "${{ secrets.CODECOV_TOKEN }}"
+        [[ -z "${{ secrets.CODECOV_TOKEN }}" ]] || bash <(curl -s https://codecov.io/bash) -t "${{ secrets.CODECOV_TOKEN }}" -B "${{ github.ref }}"
