@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -42,7 +44,6 @@ var upgrader = websocket.Upgrader{
 }
 
 func handler(wr http.ResponseWriter, req *http.Request) {
-
 	if os.Getenv("LOG_HTTP_BODY") != "" || os.Getenv("LOG_HTTP_HEADERS") != "" {
 		fmt.Printf("--------  %s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
 	} else {
@@ -146,46 +147,91 @@ func serveHTTP(wr http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(wr, "Server hostname unknown: %s\n\n", err.Error())
 	}
 
-	fmt.Fprintf(wr, "%s %s %s\n", req.Proto, req.Method, req.URL)
-	fmt.Fprintln(wr, "")
-	fmt.Fprintf(wr, "Host: %s\n", req.Host)
-	for key, values := range req.Header {
-		for _, value := range values {
-			fmt.Fprintf(wr, "%s: %s\n", key, value)
-		}
-	}
-
-	fmt.Fprintln(wr, "")
+	writeRequestHeaders(wr, req)
 	io.Copy(wr, req.Body) // nolint:errcheck
 }
 
 func serveSSE(wr http.ResponseWriter, req *http.Request) {
-	f, ok := wr.(http.Flusher)
-	if !ok {
+	if _, ok := wr.(http.Flusher); !ok {
 		http.Error(wr, "Streaming unsupported!", http.StatusInternalServerError)
 		return
 	}
+
+	var echo strings.Builder
+	writeRequestHeaders(&echo, req)
+	io.Copy(&echo, req.Body)
+	req.Body.Close()
 
 	wr.Header().Set("Content-Type", "text/event-stream")
 	wr.Header().Set("Cache-Control", "no-cache")
 	wr.Header().Set("Connection", "keep-alive")
 	wr.Header().Set("Access-Control-Allow-Origin", "*")
 
-	counter := 0
+	// Write an event about the server that is serving this request.
+	if host, err := os.Hostname(); err == nil {
+		sendSSE(wr, req, map[string]string{
+			"event":  "server",
+			"server": host,
+		})
+	}
 
+	// Write an event that echoes back the request.
+	sendSSE(wr, req, map[string]string{
+		"event":   "echo",
+		"request": echo.String(),
+	})
+
+	// Then send a counter event every second.
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
-	for {
-		fmt.Fprintf(wr, "data: {\"counter\": %d}\n\n", counter)
-		f.Flush()
-		fmt.Printf("%s | sse | {\"counter\": %d}\n", req.RemoteAddr, counter)
+	counter := 0
 
+	for {
 		select {
 		case <-req.Context().Done():
 			return
 		case <-ticker.C:
 			counter++
 		}
+
+		sendSSE(wr, req, map[string]string{
+			"event":   "counter",
+			"counter": strconv.Itoa(counter),
+		})
 	}
+}
+
+// sendSSE sends a server-sent event and logs it to the console.
+func sendSSE(
+	wr http.ResponseWriter,
+	req *http.Request,
+	ev map[string]string,
+) {
+	for k, v := range ev {
+		lines := strings.Split(v, "\n")
+
+		for _, line := range lines {
+			fmt.Fprintf(wr, "%s: %s\n", k, line)
+			fmt.Printf("%s | sse | %s: %s\n", req.RemoteAddr, k, line)
+		}
+	}
+
+	fmt.Fprintf(wr, "\n")
+	wr.(http.Flusher).Flush()
+}
+
+// writeRequestHeaders writes request headers to w.
+func writeRequestHeaders(w io.Writer, req *http.Request) {
+	fmt.Fprintf(w, "%s %s %s\n", req.Proto, req.Method, req.URL)
+	fmt.Fprintln(w, "")
+
+	fmt.Fprintf(w, "Host: %s\n", req.Host)
+	for key, values := range req.Header {
+		for _, value := range values {
+			fmt.Fprintf(w, "%s: %s\n", key, value)
+		}
+	}
+
+	fmt.Fprintln(w, "")
 }
