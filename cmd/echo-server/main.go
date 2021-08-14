@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/http2"
@@ -80,6 +81,8 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 		wr.Header().Add("Content-Type", "text/html")
 		wr.WriteHeader(200)
 		io.WriteString(wr, websocketHTML) // nolint:errcheck
+	} else if req.URL.Path == "/.sse" {
+		serveSSE(wr, req)
 	} else {
 		serveHTTP(wr, req)
 	}
@@ -154,4 +157,35 @@ func serveHTTP(wr http.ResponseWriter, req *http.Request) {
 
 	fmt.Fprintln(wr, "")
 	io.Copy(wr, req.Body) // nolint:errcheck
+}
+
+func serveSSE(wr http.ResponseWriter, req *http.Request) {
+	f, ok := wr.(http.Flusher)
+	if !ok {
+		http.Error(wr, "Streaming unsupported!", http.StatusInternalServerError)
+		return
+	}
+
+	wr.Header().Set("Content-Type", "text/event-stream")
+	wr.Header().Set("Cache-Control", "no-cache")
+	wr.Header().Set("Connection", "keep-alive")
+	wr.Header().Set("Access-Control-Allow-Origin", "*")
+
+	counter := 0
+
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		fmt.Fprintf(wr, "data: {\"counter\": %d}\n\n", counter)
+		f.Flush()
+		fmt.Printf("%s | sse | {\"counter\": %d}\n", req.RemoteAddr, counter)
+
+		select {
+		case <-req.Context().Done():
+			return
+		case <-ticker.C:
+			counter++
+		}
+	}
 }
