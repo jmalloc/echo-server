@@ -11,9 +11,13 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ## [0.3.0] - 2021-08-16
 
+### Added
+
 - Add the `/.see` route
 
 ## [0.2.0] - 2021-06-03
+
+### Added
 
 - Add support for logging HTTP headers to stdout (thanks [@arulrajnet])
 
