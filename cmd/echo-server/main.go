@@ -252,6 +252,6 @@ func writeRequest(w io.Writer, req *http.Request) {
 
 	if body.Len() > 0 {
 		fmt.Fprintln(w, "")
-		body.WriteTo(w)
+		body.WriteTo(w) // nolint:errcheck
 	}
 }
