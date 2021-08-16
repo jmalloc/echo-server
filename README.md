@@ -1,12 +1,17 @@
 # Echo Server
 
-A very simple HTTP echo server with support for websockets.
+A very simple HTTP echo server with support for websockets and server-sent
+events (SSE).
+
+The server is designed for testing HTTP proxies and clients. It echoes
+information about HTTP request headers and bodies back to the client.
 
 ## Behavior
 
-- Any messages sent from a websocket client are echoed
-- Visit `/.ws` for a basic UI to connect and send websocket messages
-- Requests to any other URL will return the request headers and body
+- Any messages sent from a websocket client are echoed as a websocket message
+- Visit `/.ws` in a browser for a basic UI to connect and send websocket messages
+- Request `/.sse` to receive the echo response via server-sent events
+- Request any other URL to receive the echo response in plain text
 
 ## Configuration
 

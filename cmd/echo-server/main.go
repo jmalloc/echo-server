@@ -8,6 +8,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"golang.org/x/net/http2"
@@ -41,6 +44,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func handler(wr http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
 
 	if os.Getenv("LOG_HTTP_BODY") != "" || os.Getenv("LOG_HTTP_HEADERS") != "" {
 		fmt.Printf("--------  %s | %s %s\n", req.RemoteAddr, req.Method, req.URL)
@@ -80,6 +84,8 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 		wr.Header().Add("Content-Type", "text/html")
 		wr.WriteHeader(200)
 		io.WriteString(wr, websocketHTML) // nolint:errcheck
+	} else if req.URL.Path == "/.sse" {
+		serveSSE(wr, req)
 	} else {
 		serveHTTP(wr, req)
 	}
@@ -143,15 +149,109 @@ func serveHTTP(wr http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(wr, "Server hostname unknown: %s\n\n", err.Error())
 	}
 
-	fmt.Fprintf(wr, "%s %s %s\n", req.Proto, req.Method, req.URL)
-	fmt.Fprintln(wr, "")
-	fmt.Fprintf(wr, "Host: %s\n", req.Host)
+	writeRequest(wr, req)
+}
+
+func serveSSE(wr http.ResponseWriter, req *http.Request) {
+	if _, ok := wr.(http.Flusher); !ok {
+		http.Error(wr, "Streaming unsupported!", http.StatusInternalServerError)
+		return
+	}
+
+	var echo strings.Builder
+	writeRequest(&echo, req)
+
+	wr.Header().Set("Content-Type", "text/event-stream")
+	wr.Header().Set("Cache-Control", "no-cache")
+	wr.Header().Set("Connection", "keep-alive")
+	wr.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var id int
+
+	// Write an event about the server that is serving this request.
+	if host, err := os.Hostname(); err == nil {
+		writeSSE(
+			wr,
+			req,
+			&id,
+			"server",
+			host,
+		)
+	}
+
+	// Write an event that echoes back the request.
+	writeSSE(
+		wr,
+		req,
+		&id,
+		"request",
+		echo.String(),
+	)
+
+	// Then send a counter event every second.
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-req.Context().Done():
+			return
+		case t := <-ticker.C:
+			writeSSE(
+				wr,
+				req,
+				&id,
+				"time",
+				t.Format(time.RFC3339),
+			)
+		}
+	}
+}
+
+// writeSSE sends a server-sent event and logs it to the console.
+func writeSSE(
+	wr http.ResponseWriter,
+	req *http.Request,
+	id *int,
+	event, data string,
+) {
+	*id++
+	writeSSEField(wr, req, "event", event)
+	writeSSEField(wr, req, "data", data)
+	writeSSEField(wr, req, "id", strconv.Itoa(*id))
+	fmt.Fprintf(wr, "\n")
+	wr.(http.Flusher).Flush()
+}
+
+// writeSSEField sends a single field within an event.
+func writeSSEField(
+	wr http.ResponseWriter,
+	req *http.Request,
+	k, v string,
+) {
+	for _, line := range strings.Split(v, "\n") {
+		fmt.Fprintf(wr, "%s: %s\n", k, line)
+		fmt.Printf("%s | sse | %s: %s\n", req.RemoteAddr, k, line)
+	}
+}
+
+// writeRequest writes request headers to w.
+func writeRequest(w io.Writer, req *http.Request) {
+	fmt.Fprintf(w, "%s %s %s\n", req.Proto, req.Method, req.URL)
+	fmt.Fprintln(w, "")
+
+	fmt.Fprintf(w, "Host: %s\n", req.Host)
 	for key, values := range req.Header {
 		for _, value := range values {
-			fmt.Fprintf(wr, "%s: %s\n", key, value)
+			fmt.Fprintf(w, "%s: %s\n", key, value)
 		}
 	}
 
-	fmt.Fprintln(wr, "")
-	io.Copy(wr, req.Body) // nolint:errcheck
+	var body bytes.Buffer
+	io.Copy(&body, req.Body) // nolint:errcheck
+
+	if body.Len() > 0 {
+		fmt.Fprintln(w, "")
+		body.WriteTo(w) // nolint:errcheck
+	}
 }
