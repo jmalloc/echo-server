@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 
 ### Added
 
-- Add the `/.see` route
+- Add the `/.sse` route, which echoes the request using server-sent events
 
 ## [0.2.0] - 2021-06-03
 
