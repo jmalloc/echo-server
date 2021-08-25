@@ -1,5 +1,4 @@
 DOCKER_REPO = jmalloc/echo-server
-DOCKER_BUILD_ARGS = --platform linux/amd64
 
 -include .makefiles/Makefile
 -include .makefiles/pkg/go/v1/Makefile
