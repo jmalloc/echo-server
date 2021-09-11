@@ -78,20 +78,30 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 		)
 	}
 
+	sendServerHostnameString := os.Getenv("SEND_SERVER_HOSTNAME")
+	if v := req.Header.Get("X-Send-Server-Hostname"); v != "" {
+		sendServerHostnameString = v
+	}
+
+	sendServerHostname := !strings.EqualFold(
+		sendServerHostnameString,
+		"false",
+	)
+
 	if websocket.IsWebSocketUpgrade(req) {
-		serveWebSocket(wr, req)
+		serveWebSocket(wr, req, sendServerHostname)
 	} else if req.URL.Path == "/.ws" {
 		wr.Header().Add("Content-Type", "text/html")
 		wr.WriteHeader(200)
 		io.WriteString(wr, websocketHTML) // nolint:errcheck
 	} else if req.URL.Path == "/.sse" {
-		serveSSE(wr, req)
+		serveSSE(wr, req, sendServerHostname)
 	} else {
-		serveHTTP(wr, req)
+		serveHTTP(wr, req, sendServerHostname)
 	}
 }
 
-func serveWebSocket(wr http.ResponseWriter, req *http.Request) {
+func serveWebSocket(wr http.ResponseWriter, req *http.Request, sendServerHostname bool) {
 	connection, err := upgrader.Upgrade(wr, req, nil)
 	if err != nil {
 		fmt.Printf("%s | %s\n", req.RemoteAddr, err)
@@ -103,11 +113,13 @@ func serveWebSocket(wr http.ResponseWriter, req *http.Request) {
 
 	var message []byte
 
-	host, err := os.Hostname()
-	if err == nil {
-		message = []byte(fmt.Sprintf("Request served by %s", host))
-	} else {
-		message = []byte(fmt.Sprintf("Server hostname unknown: %s", err.Error()))
+	if sendServerHostname {
+		host, err := os.Hostname()
+		if err == nil {
+			message = []byte(fmt.Sprintf("Request served by %s", host))
+		} else {
+			message = []byte(fmt.Sprintf("Server hostname unknown: %s", err.Error()))
+		}
 	}
 
 	err = connection.WriteMessage(websocket.TextMessage, message)
@@ -138,21 +150,23 @@ func serveWebSocket(wr http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func serveHTTP(wr http.ResponseWriter, req *http.Request) {
+func serveHTTP(wr http.ResponseWriter, req *http.Request, sendServerHostname bool) {
 	wr.Header().Add("Content-Type", "text/plain")
 	wr.WriteHeader(200)
 
-	host, err := os.Hostname()
-	if err == nil {
-		fmt.Fprintf(wr, "Request served by %s\n\n", host)
-	} else {
-		fmt.Fprintf(wr, "Server hostname unknown: %s\n\n", err.Error())
+	if sendServerHostname {
+		host, err := os.Hostname()
+		if err == nil {
+			fmt.Fprintf(wr, "Request served by %s\n\n", host)
+		} else {
+			fmt.Fprintf(wr, "Server hostname unknown: %s\n\n", err.Error())
+		}
 	}
 
 	writeRequest(wr, req)
 }
 
-func serveSSE(wr http.ResponseWriter, req *http.Request) {
+func serveSSE(wr http.ResponseWriter, req *http.Request, sendServerHostname bool) {
 	if _, ok := wr.(http.Flusher); !ok {
 		http.Error(wr, "Streaming unsupported!", http.StatusInternalServerError)
 		return
@@ -169,14 +183,16 @@ func serveSSE(wr http.ResponseWriter, req *http.Request) {
 	var id int
 
 	// Write an event about the server that is serving this request.
-	if host, err := os.Hostname(); err == nil {
-		writeSSE(
-			wr,
-			req,
-			&id,
-			"server",
-			host,
-		)
+	if sendServerHostname {
+		if host, err := os.Hostname(); err == nil {
+			writeSSE(
+				wr,
+				req,
+				&id,
+				"server",
+				host,
+			)
+		}
 	}
 
 	// Write an event that echoes back the request.
