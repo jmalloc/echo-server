@@ -9,12 +9,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
-## [Unreleased]
+## [0.3.1] - 2021-09-12
 
 ### Added
 
-- Add the `SEND_SERVER_HOSTNAME` environment variable
-- Add the `X-Send-Server-Hostname` request header
+- Add the `SEND_SERVER_HOSTNAME` environment variable, set to `false` to prevent the server from sending its hostname
+- Add the `X-Send-Server-Hostname` request header, 
 
 ## [0.3.0] - 2021-08-16
 
@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [0.1.0]: https://github.com/jmalloc/echo-server/releases/v0.1.0
 [0.2.0]: https://github.com/jmalloc/echo-server/releases/v0.2.0
 [0.3.0]: https://github.com/jmalloc/echo-server/releases/v0.3.0
+[0.3.1]: https://github.com/jmalloc/echo-server/releases/v0.3.1
 
 <!-- outside contributors -->
 [@arulrajnet]: https://github.com/arulrajnet
