@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -54,10 +55,7 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 
 	if os.Getenv("LOG_HTTP_HEADERS") != "" {
 		fmt.Printf("Headers\n")
-		//Iterate over all header fields
-		for k, v := range req.Header {
-			fmt.Printf("%q : %q\n", k, v)
-		}
+		printHeaders(os.Stdout, req.Header)
 	}
 
 	if os.Getenv("LOG_HTTP_BODY") != "" {
@@ -257,11 +255,7 @@ func writeRequest(w io.Writer, req *http.Request) {
 	fmt.Fprintln(w, "")
 
 	fmt.Fprintf(w, "Host: %s\n", req.Host)
-	for key, values := range req.Header {
-		for _, value := range values {
-			fmt.Fprintf(w, "%s: %s\n", key, value)
-		}
-	}
+	printHeaders(w, req.Header)
 
 	var body bytes.Buffer
 	io.Copy(&body, req.Body) // nolint:errcheck
@@ -269,5 +263,19 @@ func writeRequest(w io.Writer, req *http.Request) {
 	if body.Len() > 0 {
 		fmt.Fprintln(w, "")
 		body.WriteTo(w) // nolint:errcheck
+	}
+}
+
+func printHeaders(w io.Writer, h http.Header) {
+	sortedKeys := make([]string, len(h))
+
+	for key := range h {
+		sortedKeys = append(sortedKeys, key)
+	}
+
+	sort.Strings(sortedKeys)
+
+	for _, key := range sortedKeys {
+		fmt.Fprintf(w, "%s: %s\n", key, h.Get(key))
 	}
 }
