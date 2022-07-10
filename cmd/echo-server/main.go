@@ -267,7 +267,7 @@ func writeRequest(w io.Writer, req *http.Request) {
 }
 
 func printHeaders(w io.Writer, h http.Header) {
-	sortedKeys := make([]string, len(h))
+	sortedKeys := make([]string, 0, len(h))
 
 	for key := range h {
 		sortedKeys = append(sortedKeys, key)
@@ -276,6 +276,8 @@ func printHeaders(w io.Writer, h http.Header) {
 	sort.Strings(sortedKeys)
 
 	for _, key := range sortedKeys {
-		fmt.Fprintf(w, "%s: %s\n", key, h.Get(key))
+		for _, value := range h[key] {
+			fmt.Fprintf(w, "%s: %s\n", key, value)
+		}
 	}
 }
