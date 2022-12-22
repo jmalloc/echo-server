@@ -251,7 +251,7 @@ func writeSSEField(
 
 // writeRequest writes request headers to w.
 func writeRequest(w io.Writer, req *http.Request) {
-	fmt.Fprintf(w, "%s %s %s\n", req.Proto, req.Method, req.URL)
+	fmt.Fprintf(w, "%s %s %s\n", req.Method, req.URL, req.Proto)
 	fmt.Fprintln(w, "")
 
 	fmt.Fprintf(w, "Host: %s\n", req.Host)

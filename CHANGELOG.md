@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## Unreleased
+
+### Fixed
+
+- Fix rendering of the HTTP request line to match RFC-2616
+
 ## [0.3.3] - 2022-07-11
 
 ### Fixed
