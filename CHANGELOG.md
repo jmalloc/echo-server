@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.3.5] - 2023-03-07
+
+- Update dependencies to patch some security vulnerabilites
+
 ## [0.3.4] - 2022-12-23
 
 ### Fixed
@@ -61,6 +65,7 @@ The format is based on [Keep a Changelog], and this project adheres to
 [0.3.1]: https://github.com/jmalloc/echo-server/releases/v0.3.1
 [0.3.2]: https://github.com/jmalloc/echo-server/releases/v0.3.2
 [0.3.4]: https://github.com/jmalloc/echo-server/releases/v0.3.4
+[0.3.5]: https://github.com/jmalloc/echo-server/releases/v0.3.5
 
 <!-- outside contributors -->
 
