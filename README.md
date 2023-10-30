@@ -15,13 +15,35 @@ information about HTTP request headers and bodies back to the client.
 
 ## Configuration
 
-- The `PORT` environment variable sets the server port, which defaults to `8080`.
-- Set the `LOG_HTTP_BODY` environment variable to dump request bodies to `STDOUT`.
-- Set the `LOG_HTTP_HEADERS` environment variable to dump request headers to `STDOUT`.
-- Set the `SEND_SERVER_HOSTNAME` environment variable to `false` to prevent the
-  server from responding with its hostname before echoing the request. The
-  client may send the `X-Send-Server-Hostname` request header to `true` or
-  `false` to override this server-wide setting on a per-request basis.
+### Port
+
+The `PORT` environment variable sets the server port, which defaults to `8080`.
+
+### Logging
+
+Set the `LOG_HTTP_HEADERS` environment variable to print request headers to
+`STDOUT`. Additionally, set the `LOG_HTTP_BODY` environment variable to print
+entire request bodies.
+
+### Server Hostname
+
+Set the `SEND_SERVER_HOSTNAME` environment variable to `false` to prevent the
+server from responding with its hostname before echoing the request. The client
+may send the `X-Send-Server-Hostname` request header to `true` or `false` to
+override this server-wide setting on a per-request basis.
+
+### Arbitrary Headers
+
+Set the `SEND_HEADER_<header-name>` variable to send arbitrary additional
+headers in the response. Underscores in the variable name are converted to
+hyphens in the header. For example, the following environment variables can be
+used to disable CORS:
+
+```bash
+SEND_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN="*"
+SEND_HEADER_ACCESS_CONTROL_ALLOW_METHODS="*"
+SEND_HEADER_ACCESS_CONTROL_ALLOW_HEADERS="*"
+```
 
 ## Running the server
 

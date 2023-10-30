@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog], and this project adheres to
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 
+## [0.3.6] - 2023-10-31
+
+- Add support for sending arbitrary headers in all responses
+
 ## [0.3.5] - 2023-03-07
 
 - Update dependencies to patch some security vulnerabilites

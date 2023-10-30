@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"sort"
@@ -71,7 +70,7 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 		// Replace original body with buffered version so it's still sent to the
 		// browser.
 		req.Body.Close()
-		req.Body = ioutil.NopCloser(
+		req.Body = io.NopCloser(
 			bytes.NewReader(buf.Bytes()),
 		)
 	}
@@ -85,6 +84,18 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 		sendServerHostnameString,
 		"false",
 	)
+
+	for _, line := range os.Environ() {
+		parts := strings.SplitN(line, "=", 2)
+		key, value := parts[0], parts[1]
+
+		if name, ok := strings.CutPrefix(key, `SEND_HEADER_`); ok {
+			wr.Header().Set(
+				strings.ReplaceAll(name, "_", "-"),
+				value,
+			)
+		}
+	}
 
 	if websocket.IsWebSocketUpgrade(req) {
 		serveWebSocket(wr, req, sendServerHostname)
