@@ -47,7 +47,7 @@ SEND_HEADER_ACCESS_CONTROL_ALLOW_HEADERS="*"
 
 ### Web Socket Test Path 
 
-Set the `FRONTEND_WS_PATH` environment variable to send web socker request to particular path 
+Set the `FRONTEND_WS_PATH` environment variable to send web socket request to the particular path 
 instead of root
 
 ## Running the server
