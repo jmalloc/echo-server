@@ -162,7 +162,7 @@ func serveWebSocket(wr http.ResponseWriter, req *http.Request, sendServerHostnam
 //go:embed "html"
 var files embed.FS
 
-func serveFromntend(wr http.ResponseWriter) {
+func serveFrontend(wr http.ResponseWriter) {
 	const templateName = "html/frontend.tmpl.html"
 	tmpl, err := template.ParseFS(files, templateName)
 	if err != nil {
