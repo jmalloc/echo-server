@@ -102,7 +102,7 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 	if websocket.IsWebSocketUpgrade(req) {
 		serveWebSocket(wr, req, sendServerHostname)
 	} else if req.URL.Path == "/.ws" {
-		serveFromntend(wr)
+		serveFrontend(wr)
 	} else if req.URL.Path == "/.sse" {
 		serveSSE(wr, req, sendServerHostname)
 	} else {
