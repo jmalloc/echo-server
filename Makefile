@@ -2,6 +2,8 @@ DOCKER_REPO = jmalloc/echo-server
 DOCKER_PLATFORMS += linux/amd64
 DOCKER_PLATFORMS += linux/arm64
 
+GO_EMBEDDED_FILES += cmd/echo-server/html/frontend.tmpl.html
+
 -include .makefiles/Makefile
 -include .makefiles/pkg/go/v1/Makefile
 -include .makefiles/pkg/docker/v1/Makefile
