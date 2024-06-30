@@ -45,6 +45,11 @@ SEND_HEADER_ACCESS_CONTROL_ALLOW_METHODS="*"
 SEND_HEADER_ACCESS_CONTROL_ALLOW_HEADERS="*"
 ```
 
+### Web Socket Test Path 
+
+Set the `FRONTEND_WS_PATH` environment variable to send web socket request to the particular path 
+instead of root
+
 ## Running the server
 
 The examples below show a few different ways of running the server with the HTTP
