@@ -9,8 +9,8 @@ information about HTTP request headers and bodies back to the client.
 ## Behavior
 
 - Any messages sent from a websocket client are echoed as a websocket message.
-- Visit `/.ws` in a browser for a basic UI to connect and send websocket messages.
-- Request `/.sse` to receive the echo response via server-sent events.
+- Requests to a file named `.ws` under any path serve a basic UI to connect and send websocket messages.
+- Requests to a file named `.sse` under any path streams server-sent events.
 - Request any other URL to receive the echo response in plain text.
 
 ## Configuration
@@ -44,11 +44,6 @@ SEND_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN="*"
 SEND_HEADER_ACCESS_CONTROL_ALLOW_METHODS="*"
 SEND_HEADER_ACCESS_CONTROL_ALLOW_HEADERS="*"
 ```
-
-### Web Socket Test Path 
-
-Set the `FRONTEND_WS_PATH` environment variable to send web socket request to the particular path 
-instead of root
 
 ## Running the server
 

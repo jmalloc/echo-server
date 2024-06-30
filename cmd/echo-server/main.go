@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
@@ -101,9 +102,9 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 
 	if websocket.IsWebSocketUpgrade(req) {
 		serveWebSocket(wr, req, sendServerHostname)
-	} else if req.URL.Path == "/.ws" {
-		serveFrontend(wr)
-	} else if req.URL.Path == "/.sse" {
+	} else if path.Base(req.URL.Path) == ".ws" {
+		serveFrontend(wr, req)
+	} else if path.Base(req.URL.Path) == ".sse" {
 		serveSSE(wr, req, sendServerHostname)
 	} else {
 		serveHTTP(wr, req, sendServerHostname)
@@ -162,7 +163,7 @@ func serveWebSocket(wr http.ResponseWriter, req *http.Request, sendServerHostnam
 //go:embed "html"
 var files embed.FS
 
-func serveFrontend(wr http.ResponseWriter) {
+func serveFrontend(wr http.ResponseWriter, req *http.Request) {
 	const templateName = "html/frontend.tmpl.html"
 	tmpl, err := template.ParseFS(files, templateName)
 	if err != nil {
@@ -172,7 +173,7 @@ func serveFrontend(wr http.ResponseWriter) {
 	templateData := struct {
 		Path string
 	}{
-		Path: os.Getenv("FRONTEND_WS_PATH"),
+		Path: path.Dir(req.URL.Path),
 	}
 	err = tmpl.Execute(wr, templateData)
 	if err != nil {
