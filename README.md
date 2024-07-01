@@ -45,6 +45,11 @@ SEND_HEADER_ACCESS_CONTROL_ALLOW_METHODS="*"
 SEND_HEADER_ACCESS_CONTROL_ALLOW_HEADERS="*"
 ```
 
+### WebSocket URL
+
+Set the `WEBSOCKET_ROOT` environment variable to prefix all websocket
+requests made by the `.ws` user interface with a specific path.
+
 ## Running the server
 
 The examples below show a few different ways of running the server with the HTTP

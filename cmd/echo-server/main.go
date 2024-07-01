@@ -1,3 +1,4 @@
+// Package main is the executable for the echo server.
 package main
 
 import (
