@@ -128,7 +128,9 @@
             }
 
             function connect() {
-                log('attempting to connect', 'info')
+                url = (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + window.location.host + '{{.Path}}';
+
+                log('attempting to connect to ' + url, 'info')
 
                 autoReconnect = true;
                 msgPanel.className = 'hidden';
@@ -138,11 +140,7 @@
                 disconnectBtn.className = 'hidden';
                 cancelBtn.className = '';
 
-                ws = new WebSocket(
-                    (location.protocol === 'https:'
-                        ? 'wss://' + window.location.host
-                        : 'ws://' + window.location.host) + '{{.Path}}'
-                );
+                ws = new WebSocket(url);
 
                 ws.onopen = function (ev) {
                     msgPanel.className = '';

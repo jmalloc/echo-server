@@ -173,7 +173,10 @@ func serveFrontend(wr http.ResponseWriter, req *http.Request) {
 	templateData := struct {
 		Path string
 	}{
-		Path: path.Dir(req.URL.Path),
+		Path: path.Join(
+			os.Getenv("WEBSOCKET_ROOT"),
+			path.Dir(req.URL.Path),
+		),
 	}
 	err = tmpl.Execute(wr, templateData)
 	if err != nil {
