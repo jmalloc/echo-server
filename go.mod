@@ -1,7 +1,8 @@
 module github.com/jmalloc/echo-server
 
-go 1.21
-toolchain go1.23.7
+go 1.24
+
+toolchain go1.24.0
 
 require (
 	github.com/gorilla/websocket v1.4.2
