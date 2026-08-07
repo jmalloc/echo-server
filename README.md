@@ -19,6 +19,23 @@ information about HTTP request headers and bodies back to the client.
 
 The `PORT` environment variable sets the server port, which defaults to `8080`.
 
+### SEND_SERVER_REMOTE
+
+The `SEND_SERVER_REMOTE` variable set remote address display or 
+
+```bash
+curl -H '' -H 'X-Send-Server-Remote: true' http://dnsname.domain
+```
+
+Add RemoteAddr, RemoteIP, RemotePort to echo response 
+
+```
+RemoteAddr: xx:yy
+RemoteIP: xx
+RemotePort: yy
+```
+
+
 ### Logging
 
 Set the `LOG_HTTP_HEADERS` environment variable to print request headers to
@@ -60,6 +77,23 @@ server bound to a custom TCP port of `10000`.
 ```
 go get -u github.com/jmalloc/echo-server/...
 PORT=10000 echo-server
+```
+
+```
+export GOPROXY=https://goproxy.cn,direct && SEND_SERVER_REMOTE=false PORT=10001 go run cmd/echo-server/main.go
+```
+
+## build and package
+
+```bash
+go build -o artifacts/echo-server ./cmd/echo-server
+# build
+GOOS=linux GOARCH=amd64 go build -o artifacts/echo-server_linux_amd64 ./cmd/echo-server
+GOOS=linux GOARCH=arm64 go build -o artifacts/echo-server_linux_arm64 ./cmd/echo-server
+GOOS=darwin GOARCH=amd64 go build -o artifacts/echo-server_mac_x86_64 ./cmd/echo-server
+GOOS=darwin GOARCH=arm64 go build -o artifacts/echo-server_mac_arm64 ./cmd/echo-server
+GOOS=windows GOARCH=amd64 go build -o artifacts/echo-server_windows_amd64 ./cmd/echo-server
+ls -lah artifacts/*
 ```
 
 ### Running under Docker

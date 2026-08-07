@@ -89,6 +89,16 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 		"false",
 	)
 
+	sendServerRemoteString := os.Getenv("SEND_SERVER_REMOTE")
+	if v := req.Header.Get("X-Send-Server-Remote"); v != "" {
+		sendServerRemoteString = v
+	}
+
+	sendServerRemote := strings.EqualFold(
+		sendServerRemoteString,
+		"true",
+	)
+
 	for _, line := range os.Environ() {
 		parts := strings.SplitN(line, "=", 2)
 		key, value := parts[0], parts[1]
@@ -102,17 +112,17 @@ func handler(wr http.ResponseWriter, req *http.Request) {
 	}
 
 	if websocket.IsWebSocketUpgrade(req) {
-		serveWebSocket(wr, req, sendServerHostname)
+		serveWebSocket(wr, req, sendServerHostname, sendServerRemote)
 	} else if path.Base(req.URL.Path) == ".ws" {
 		serveFrontend(wr, req)
 	} else if path.Base(req.URL.Path) == ".sse" {
-		serveSSE(wr, req, sendServerHostname)
+		serveSSE(wr, req, sendServerHostname, sendServerRemote)
 	} else {
-		serveHTTP(wr, req, sendServerHostname)
+		serveHTTP(wr, req, sendServerHostname, sendServerRemote)
 	}
 }
 
-func serveWebSocket(wr http.ResponseWriter, req *http.Request, sendServerHostname bool) {
+func serveWebSocket(wr http.ResponseWriter, req *http.Request, sendServerHostname bool, sendServerRemote bool) {
 	connection, err := upgrader.Upgrade(wr, req, nil)
 	if err != nil {
 		fmt.Printf("%s | %s\n", req.RemoteAddr, err)
@@ -188,7 +198,7 @@ func serveFrontend(wr http.ResponseWriter, req *http.Request) {
 	wr.WriteHeader(200)
 }
 
-func serveHTTP(wr http.ResponseWriter, req *http.Request, sendServerHostname bool) {
+func serveHTTP(wr http.ResponseWriter, req *http.Request, sendServerHostname bool, sendServerRemote bool) {
 	wr.Header().Add("Content-Type", "text/plain")
 	wr.WriteHeader(200)
 
@@ -201,17 +211,17 @@ func serveHTTP(wr http.ResponseWriter, req *http.Request, sendServerHostname boo
 		}
 	}
 
-	writeRequest(wr, req)
+	writeRequest(wr, req, sendServerRemote)
 }
 
-func serveSSE(wr http.ResponseWriter, req *http.Request, sendServerHostname bool) {
+func serveSSE(wr http.ResponseWriter, req *http.Request, sendServerHostname bool, sendServerRemote bool) {
 	if _, ok := wr.(http.Flusher); !ok {
 		http.Error(wr, "Streaming unsupported!", http.StatusInternalServerError)
 		return
 	}
 
 	var echo strings.Builder
-	writeRequest(&echo, req)
+	writeRequest(&echo, req, sendServerRemote)
 
 	wr.Header().Set("Content-Type", "text/event-stream")
 	wr.Header().Set("Cache-Control", "no-cache")
@@ -290,11 +300,28 @@ func writeSSEField(
 }
 
 // writeRequest writes request headers to w.
-func writeRequest(w io.Writer, req *http.Request) {
+func writeRequest(w io.Writer, req *http.Request, sendServerRemote bool) {
 	fmt.Fprintf(w, "%s %s %s\n", req.Method, req.URL, req.Proto)
 	fmt.Fprintln(w, "")
 
 	fmt.Fprintf(w, "Host: %s\n", req.Host)
+
+	if sendServerRemote {
+		fmt.Fprintf(w, "RemoteAddr: %s\n", req.RemoteAddr)
+
+		// 解析IP地址和端口
+		ip := req.RemoteAddr
+		port := ""
+		if idx := strings.LastIndex(req.RemoteAddr, ":"); idx != -1 {
+			ip = req.RemoteAddr[:idx]
+			port = req.RemoteAddr[idx+1:]
+			// 移除IPv6地址的方括号
+			ip = strings.TrimPrefix(strings.TrimSuffix(ip, "]"), "[")
+		}
+		fmt.Fprintf(w, "RemoteIP: %s\n", ip)
+		fmt.Fprintf(w, "RemotePort: %s\n", port)
+	}
+
 	printHeaders(w, req.Header)
 
 	var body bytes.Buffer
