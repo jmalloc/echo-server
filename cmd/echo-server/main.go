@@ -127,9 +127,9 @@ func serveWebSocket(wr http.ResponseWriter, req *http.Request, sendServerHostnam
 	if sendServerHostname {
 		host, err := os.Hostname()
 		if err == nil {
-			message = []byte(fmt.Sprintf("Request served by %s", host))
+			message = fmt.Appendf(nil, "Request served by %s", host)
 		} else {
-			message = []byte(fmt.Sprintf("Server hostname unknown: %s", err.Error()))
+			message = fmt.Appendf(nil, "Server hostname unknown: %s", err.Error())
 		}
 	}
 
@@ -283,7 +283,7 @@ func writeSSEField(
 	req *http.Request,
 	k, v string,
 ) {
-	for _, line := range strings.Split(v, "\n") {
+	for line := range strings.SplitSeq(v, "\n") {
 		fmt.Fprintf(wr, "%s: %s\n", k, line)
 		fmt.Printf("%s | sse | %s: %s\n", req.RemoteAddr, k, line)
 	}
